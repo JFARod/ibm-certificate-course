@@ -54,12 +54,12 @@ app.layout = html.Div([
             value='1980'
         )),
     html.Div([#TASK 2.3: Add a division for output display
-    html.Div(id='output-container', className='chart-grid', style={'flex'}),])
+    html.Div(id='output-container', className='chart-grid', style={'display':'flex'}),])
 ])
 #TASK 2.4: Creating Callbacks
 # Define the callback function to update the input container based on the selected statistics
 @app.callback(
-    Output(component_id='select year', component_property='disabled'),
+    Output(component_id='select-year', component_property='disabled'),
     Input(component_id='dropdown-statistics',component_property='disabled'))
 
 def update_input_container(selected_statistics):
@@ -71,7 +71,7 @@ def update_input_container(selected_statistics):
 #Callback for plotting
 # Define the callback function to update the input container based on the selected statistics
 @app.callback(
-    Output(component_id='', component_property='children'),
+    Output(component_id='output-container', component_property='children'),
     [Input(component_id='select-year', component_property='value'), 
      Input(component_id='dropdown-statistics', component_property='value')])
 
@@ -95,7 +95,7 @@ def update_output_container(selected_statistics, input_year):
 
 #Plot 2 Calculate the average number of vehicles sold by vehicle type       
         # use groupby to create relevant data for plotting
-        average_sales = recession_data.mean().reset_index()                           
+        average_sales = recession_data.groupby('Vehicle_Type').mean().reset_index()                           
         R_chart2  = dcc.Graph(
                     figure = px.bar(average_sales,
                                     x = 'Vehicle_Type',
@@ -117,11 +117,11 @@ def update_output_container(selected_statistics, input_year):
         )
 
 # Plot 4 bar chart for the effect of unemployment rate on vehicle type and sales
-        unemployment_data = recession_data.groupby('Vehicle_Type')['Unemplyment_Rate'].mean().reset_index()
+        unemployment_data = recession_data.groupby('Vehicle_Type')['unemployment_uate'].mean().reset_index()
         R_chart4 = dcc.Graph(
         figure = px.bar(unemployment_data,
         x = 'Vehicle_Type',
-        y = 'Unemplyment_Rate',
+        y = 'unemployment_rate',
         title = "Effect of Unemployment Rate on Vehicle Type during Recession Period")
         )
 
