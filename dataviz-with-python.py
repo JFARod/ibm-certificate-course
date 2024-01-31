@@ -6,7 +6,7 @@
 
 import dash
 from dash import dcc
-from dash import html
+from dash import html, ctx
 from dash.dependencies import Input, Output
 import pandas as pd
 import plotly.graph_objs as go
@@ -19,7 +19,7 @@ data = pd.read_csv('https://cf-courses-data.s3.us.cloud-object-storage.appdomain
 app = dash.Dash(__name__)
 
 # Set the title of the dashboard
-#app.title = "Automobile Statistics Dashboard"
+app.title = "Automobile Statistics Dashboard"
 
 #---------------------------------------------------------------------------------
 # Create the dropdown menu options
@@ -60,10 +60,10 @@ app.layout = html.Div([
 # Define the callback function to update the input container based on the selected statistics
 @app.callback(
     Output(component_id='select-year', component_property='disabled'),
-    Input(component_id='dropdown-statistics',component_property='disabled'))
+    Input(component_id='dropdown-statistics',component_property='value'))
 
 def update_input_container(selected_statistics):
-    if selected_statistics =='Yearly Statistics': 
+    if selected_statistics !='Yearly Statistics': 
         return True
     else: 
         return False
@@ -73,10 +73,12 @@ def update_input_container(selected_statistics):
 @app.callback(
     Output(component_id='output-container', component_property='children'),
     [Input(component_id='select-year', component_property='value'), 
-     Input(component_id='dropdown-statistics', component_property='value')])
+     Input(component_id='dropdown-statistics', component_property='value')]
+     )
 
 
 def update_output_container(selected_statistics, input_year):
+    print(f"Callback with {selected_statistics} and {input_year}")
     if selected_statistics == 'Recession Period Statistics':
         # Filter the data for recession periods
         recession_data = data[data['Recession'] == 1]
@@ -89,7 +91,7 @@ def update_output_container(selected_statistics, input_year):
         R_chart1 = dcc.Graph(
             figure=px.line(yearly_rec,
                             x='Year',
-                            y='Automobile',
+                            y='Automobile_Sales',
                             title='Average Automobile Sales fluctuation over Recession Period')
                             )
 
@@ -117,7 +119,7 @@ def update_output_container(selected_statistics, input_year):
         )
 
 # Plot 4 bar chart for the effect of unemployment rate on vehicle type and sales
-        unemployment_data = recession_data.groupby('Vehicle_Type')['unemployment_uate'].mean().reset_index()
+        unemployment_data = recession_data.groupby('Vehicle_Type')['unemployment_rate'].mean().reset_index()
         R_chart4 = dcc.Graph(
         figure = px.bar(unemployment_data,
         x = 'Vehicle_Type',
@@ -147,9 +149,8 @@ def update_output_container(selected_statistics, input_year):
                 title = 'Automobile Sales Over Time per Year'))
             
 # Plot 2 Total Monthly Automobile sales using line chart.
-        month_sales = yearly_data.groupby('Month')['Automobile_Sales'].sum().reset_index()
-        Y_chart2 = dcc.Graph(
-            figure=px.line(month_sales,
+            Y_chart2 = dcc.Graph(
+            figure=px.line(yearly_data,
                 x = 'Month',
                 y = 'Automobile_Sales',
                 title = 'Total Automobile Sales per Month in the Year of {}'.format(input_year) )
@@ -168,7 +169,7 @@ def update_output_container(selected_statistics, input_year):
         Y_chart4 = dcc.Graph(
             figure = px.pie(exp_data,
                 values = 'Advertising_Expediture',
-                names = 'Advertising_Expediture',
+                names = 'Vehicle_Type',
                 title = 'Advertisement Expenditure per Vehicle Type in the Year of {}'.format(input_year)))
 
 #TASK 2.6: Returning the graphs for displaying Yearly data
